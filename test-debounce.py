@@ -14,10 +14,7 @@ __author__ = 'hacketo'
 import termios, fcntl, sys, os
 import time
 
-
-lastKey = None
-lastTime = 0
-
+keys = {}
 
 BOUNCE_TIME = 30
 """
@@ -29,7 +26,7 @@ def loopKeys():
     Check if the time between two same key taped is lower than the BOUNCE_TIME const value,
     then print some informations about the bounce time
     """
-    global lastKey, lastTime
+    global keys
 
     fd = sys.stdin.fileno()
 
@@ -45,14 +42,12 @@ def loopKeys():
         while 1:
             try:
                 c = sys.stdin.read(1)
-
-                if c == lastKey:
-                    timePassed = getCurrentMillisec() - lastTime
+                t = getCurrentMillisec()
+                if c in keys:
+                    timePassed = t - keys[c]
                     if timePassed <= BOUNCE_TIME:
                         print "bounce : %s , %d"%(c, timePassed)
-                else:
-                    lastKey = c
-                lastTime = getCurrentMillisec()
+                keys[c] = t
             except IOError: pass
     finally:
         termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
